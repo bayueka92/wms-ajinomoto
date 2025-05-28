@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
 import { X } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import { Button } from './Button';
@@ -52,8 +53,6 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -63,41 +62,80 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 transition-opacity ${
-        isClosing ? 'opacity-0' : 'opacity-100'
-      }`}
-      onClick={closeOnClickOutside ? handleClose : undefined}
-    >
-      <div className="flex min-h-full items-center justify-center p-4 text-center">
-        <div
-          className={twMerge(
-            `w-full transform rounded-lg bg-white text-left align-middle shadow-xl transition-all ${
-              sizeClasses[size]
-            } ${isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`,
-            className
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {title && (
-            <div className="flex items-center justify-between border-b border-ajinomoto-gray-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-ajinomoto-gray-900">{title}</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClose}
-                className="p-1 text-ajinomoto-gray-500 hover:text-ajinomoto-gray-700"
-              >
-                <X size={18} />
-              </Button>
+    <Transition show={isOpen} as={React.Fragment}>
+      <Dialog
+        as="div"
+        className="fixed inset-0 z-50 overflow-y-auto"
+        onClose={closeOnClickOutside ? handleClose : () => {}}
+      >
+        <div className="min-h-screen px-4 text-center">
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+          </Transition.Child>
+
+          {/* This element is to trick the browser into centering the modal contents. */}
+          <span
+            className="inline-block h-screen align-middle"
+            aria-hidden="true"
+          >
+            &#8203;
+          </span>
+
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div
+              className={twMerge(
+                `inline-block w-full text-left align-middle transition-all transform bg-white shadow-xl rounded-lg ${
+                  sizeClasses[size]
+                }`,
+                className
+              )}
+            >
+              {title && (
+                <div className="flex items-center justify-between border-b border-ajinomoto-gray-200 px-6 py-4">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-semibold text-ajinomoto-gray-900"
+                  >
+                    {title}
+                  </Dialog.Title>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClose}
+                    className="p-1 text-ajinomoto-gray-500 hover:text-ajinomoto-gray-700"
+                  >
+                    <X size={18} />
+                  </Button>
+                </div>
+              )}
+
+              <div className="px-6 py-4">{children}</div>
+
+              {footer && (
+                <div className="border-t border-ajinomoto-gray-200 px-6 py-4">
+                  {footer}
+                </div>
+              )}
             </div>
-          )}
-
-          <div className="px-6 py-4">{children}</div>
-
-          {footer && <div className="border-t border-ajinomoto-gray-200 px-6 py-4">{footer}</div>}
+          </Transition.Child>
         </div>
-      </div>
-    </div>
+      </Dialog>
+    </Transition>
   );
 };
