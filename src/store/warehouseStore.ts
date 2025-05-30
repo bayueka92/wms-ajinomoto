@@ -8,6 +8,7 @@ interface WarehouseState {
   // Location operations
   addLocation: (location: Omit<Location, 'id'>) => Promise<Location>;
   updateLocation: (id: string, data: Partial<Location>) => Promise<boolean>;
+  deleteLocation: (id: string) => Promise<boolean>;
   selectLocation: (id: string | null) => void;
   getLocationById: (id: string) => Location | undefined;
   
@@ -131,6 +132,15 @@ export const useWarehouseStore = create<WarehouseState>((set, get) => ({
       locations: state.locations.map((location) =>
         location.id === id ? { ...location, ...data } : location
       ),
+    }));
+    
+    return true;
+  },
+
+  deleteLocation: async (id) => {
+    set((state) => ({
+      locations: state.locations.filter((location) => location.id !== id),
+      selectedLocation: state.selectedLocation?.id === id ? null : state.selectedLocation,
     }));
     
     return true;

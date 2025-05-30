@@ -1,190 +1,294 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { useWarehouseStore } from '../../store/warehouseStore';
 import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Input } from '../ui/Input';
+import Swal from 'sweetalert2';
 
 export const WarehouseVisualization: React.FC = () => {
-  const { locations, selectedLocation } = useWarehouseStore();
-  
+  const { locations, selectedLocation, deleteLocation, updateLocation } = useWarehouseStore();
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    code: '',
+    capacity: 0,
+    width: 0,
+    height: 0,
+    depth: 0
+  });
+
+  const handleDelete = (locationId: string) => {
+    Swal.fire({
+      title: 'Apakah anda yakin?',
+      text: "Lokasi yang dihapus tidak dapat dikembalikan!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E61E25',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteLocation(locationId);
+        Swal.fire(
+          'Terhapus!',
+          'Lokasi berhasil dihapus.',
+          'success'
+        );
+      }
+    });
+  };
+
+  const handleEdit = (location: any) => {
+    setEditForm({
+      name: location.name,
+      code: location.code,
+      capacity: location.capacity,
+      width: location.width,
+      height: location.height,
+      depth: location.depth
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (selectedLocation) {
+      await updateLocation(selectedLocation.id, editForm);
+      setShowEditModal(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Data lokasi berhasil diperbarui',
+        timer: 1500
+      });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Warehouse Layout</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {locations.map((location) => (
-                <div
-                  key={location.id}
-                  className={`p-4 rounded-lg border ${
-                    selectedLocation?.id === location.id
-                      ? 'border-ajinomoto-red bg-ajinomoto-red-50'
-                      : 'border-ajinomoto-gray-200'
-                  }`}
-                >
-                  <h3 className="font-medium text-ajinomoto-gray-900">{location.name}</h3>
-                  <p className="text-sm text-ajinomoto-gray-500">{location.code}</p>
-                  
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Capacity:</span>
-                      <span>{location.capacity}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Occupied:</span>
-                      <span>{location.occupied}</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="w-full bg-ajinomoto-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            (location.occupied / location.capacity) < 0.7
-                              ? 'bg-success'
-                              : (location.occupied / location.capacity) < 0.9
-                              ? 'bg-warning'
-                              : 'bg-error'
-                          }`}
-                          style={{
-                            width: `${(location.occupied / location.capacity) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      leftIcon={<Eye size={14} />}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      leftIcon={<Edit size={14} />}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      leftIcon={<Trash2 size={14} />}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {locations.map((location) => (
+        <div
+          key={location.id}
+          className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
+            selectedLocation?.id === location.id
+              ? 'border-ajinomoto-red bg-ajinomoto-red-50'
+              : 'border-ajinomoto-gray-200 hover:border-ajinomoto-red'
+          }`}
+        >
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h3 className="font-medium text-ajinomoto-gray-900">{location.name}</h3>
+              <p className="text-sm text-ajinomoto-gray-500">{location.code}</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Eye size={14} />}
+                onClick={() => setShowDetailModal(true)}
+                className="hover:bg-ajinomoto-red hover:text-white"
+              >
+                View
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Edit size={14} />}
+                onClick={() => handleEdit(location)}
+                className="hover:bg-ajinomoto-blue hover:text-white"
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Trash2 size={14} />}
+                onClick={() => handleDelete(location.id)}
+                className="hover:bg-error hover:text-white"
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
 
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Location Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedLocation ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ajinomoto-gray-500">Kapasitas:</span>
+              <span>{location.capacity}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ajinomoto-gray-500">Terisi:</span>
+              <span>{location.occupied}</span>
+            </div>
+            <div className="mt-2">
+              <div className="w-full bg-ajinomoto-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    (location.occupied / location.capacity) < 0.7
+                      ? 'bg-success'
+                      : (location.occupied / location.capacity) < 0.9
+                      ? 'bg-warning'
+                      : 'bg-error'
+                  }`}
+                  style={{
+                    width: `${(location.occupied / location.capacity) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Detail Modal */}
+      <Modal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Lokasi"
+        size="lg"
+      >
+        {selectedLocation && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-ajinomoto-gray-900">
-                    {selectedLocation.name}
-                  </h3>
-                  <p className="text-sm text-ajinomoto-gray-500">{selectedLocation.code}</p>
+                <h4 className="text-sm font-medium text-ajinomoto-gray-500">Nama Lokasi</h4>
+                <p className="text-ajinomoto-gray-900">{selectedLocation.name}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-ajinomoto-gray-500">Kode</h4>
+                <p className="text-ajinomoto-gray-900">{selectedLocation.code}</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Utilisasi</h4>
+              <div className="w-full bg-ajinomoto-gray-200 rounded-full h-2 mb-1">
+                <div
+                  className={`h-2 rounded-full ${
+                    (selectedLocation.occupied / selectedLocation.capacity) < 0.7
+                      ? 'bg-success'
+                      : (selectedLocation.occupied / selectedLocation.capacity) < 0.9
+                      ? 'bg-warning'
+                      : 'bg-error'
+                  }`}
+                  style={{
+                    width: `${(selectedLocation.occupied / selectedLocation.capacity) * 100}%`,
+                  }}
+                />
+              </div>
+              <p className="text-sm text-ajinomoto-gray-500">
+                {selectedLocation.occupied} dari {selectedLocation.capacity} unit ({Math.round((selectedLocation.occupied / selectedLocation.capacity) * 100)}% terisi)
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Dimensi</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">Panjang</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.width}m</p>
                 </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-ajinomoto-gray-500">Type</p>
-                    <p className="text-ajinomoto-gray-900">
-                      {selectedLocation.type === 'rack' ? 'Rack' :
-                       selectedLocation.type === 'aisle' ? 'Aisle' :
-                       selectedLocation.type === 'zone' ? 'Zone' :
-                       selectedLocation.type === 'staging' ? 'Staging Area' :
-                       selectedLocation.type === 'receiving' ? 'Receiving Area' :
-                       'Shipping Area'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-ajinomoto-gray-500">Capacity</p>
-                    <div className="flex items-center">
-                      <div className="flex-1 mr-4">
-                        <div className="h-2 bg-ajinomoto-gray-200 rounded-full">
-                          <div
-                            className={`h-2 rounded-full ${
-                              (selectedLocation.occupied / selectedLocation.capacity) < 0.7
-                                ? 'bg-success'
-                                : (selectedLocation.occupied / selectedLocation.capacity) < 0.9
-                                ? 'bg-warning'
-                                : 'bg-error'
-                            }`}
-                            style={{
-                              width: `${(selectedLocation.occupied / selectedLocation.capacity) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {Math.round((selectedLocation.occupied / selectedLocation.capacity) * 100)}%
-                      </span>
-                    </div>
-                    <p className="text-sm text-ajinomoto-gray-500 mt-1">
-                      {selectedLocation.occupied} of {selectedLocation.capacity} units
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-ajinomoto-gray-500">Dimensions</p>
-                    <p className="text-ajinomoto-gray-900">
-                      {selectedLocation.width}m × {selectedLocation.height}m × {selectedLocation.depth}m
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-ajinomoto-gray-200 mt-4">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        leftIcon={<Eye size={14} />}
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        leftIcon={<Edit size={14} />}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        leftIcon={<Trash2 size={14} />}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">Lebar</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.depth}m</p>
+                </div>
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">Tinggi</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.height}m</p>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-ajinomoto-gray-500">
-                  Select a location to view details
-                </p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Koordinat</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">X</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.x}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">Y</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.y}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-ajinomoto-gray-500">Z</p>
+                  <p className="text-ajinomoto-gray-900">{selectedLocation.z}</p>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Lokasi"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nama Lokasi"
+            value={editForm.name}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            fullWidth
+          />
+          <Input
+            label="Kode"
+            value={editForm.code}
+            onChange={(e) => setEditForm({ ...editForm, code: e.target.value })}
+            fullWidth
+          />
+          <Input
+            label="Kapasitas"
+            type="number"
+            value={editForm.capacity}
+            onChange={(e) => setEditForm({ ...editForm, capacity: parseInt(e.target.value) })}
+            fullWidth
+          />
+          <div className="grid grid-cols-3 gap-4">
+            <Input
+              label="Panjang (m)"
+              type="number"
+              value={editForm.width}
+              onChange={(e) => setEditForm({ ...editForm, width: parseFloat(e.target.value) })}
+              fullWidth
+            />
+            <Input
+              label="Lebar (m)"
+              type="number"
+              value={editForm.depth}
+              onChange={(e) => setEditForm({ ...editForm, depth: parseFloat(e.target.value) })}
+              fullWidth
+            />
+            <Input
+              label="Tinggi (m)"
+              type="number"
+              value={editForm.height}
+              onChange={(e) => setEditForm({ ...editForm, height: parseFloat(e.target.value) })}
+              fullWidth
+            />
+          </div>
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowEditModal(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleEditSubmit}
+            >
+              Simpan Perubahan
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
