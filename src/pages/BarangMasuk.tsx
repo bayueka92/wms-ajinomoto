@@ -5,11 +5,12 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { CustomSelect } from '../components/ui/Select';
 import { CustomDatePicker } from '../components/ui/DatePicker';
-import { Truck, PlusCircle, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, QrCode } from 'lucide-react';
+import { Truck, PlusCircle, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, QrCode, Printer } from 'lucide-react';
 import { GoodsEntryForm } from '../components/inventory/GoodsEntryForm';
 import { format } from 'date-fns';
 import { Modal } from '../components/ui/Modal';
 import Swal from 'sweetalert2';
+import printJS from 'print-js';
 
 interface FilterState {
   dateRange: {
@@ -148,6 +149,141 @@ const BarangMasuk: React.FC = () => {
     }
   };
 
+  const handlePrintRFIDLabel = (movement: any) => {
+    const product = products.find(p => p.id === movement.productId);
+    if (!product) return;
+
+    const currentDate = new Date().toLocaleString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const printContent = `
+      <div style="
+        width: 300px;
+        padding: 20px;
+        font-family: 'Inter', sans-serif;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+      ">
+        <!-- Header -->
+        <div style="
+          text-align: center;
+          margin-bottom: 15px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #E61E25;
+        ">
+          <div style="
+            font-size: 24px;
+            font-weight: bold;
+            color: #E61E25;
+            margin-bottom: 4px;
+          ">AJINOMOTO</div>
+          <div style="
+            font-size: 12px;
+            color: #1E3A8A;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          ">WMS RFID System</div>
+        </div>
+
+        <!-- RFID Tag -->
+        <div style="
+          text-align: center;
+          margin-bottom: 20px;
+          padding: 15px;
+          background: #F3F4F6;
+          border-radius: 6px;
+        ">
+          <div style="
+            font-family: monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1F2937;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+          ">${movement.rfidTagId}</div>
+          <div style="
+            font-size: 10px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          ">RFID Tag ID</div>
+        </div>
+
+        <!-- Product Info -->
+        <div style="margin-bottom: 20px;">
+          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Product</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-weight: 500;">
+                ${product.name}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">SKU</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-family: monospace;">
+                ${product.sku}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Category</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right;">
+                ${product.category}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Batch</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-family: monospace;">
+                ${product.batchNumber || 'N/A'}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Location</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right;">
+                ${movement.toLocationId || 'N/A'}
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="
+          text-align: center;
+          font-size: 10px;
+          color: #6B7280;
+          padding-top: 15px;
+          border-top: 1px solid #E5E7EB;
+        ">
+          <div>Registered on: ${currentDate}</div>
+          <div style="margin-top: 4px;">PT AJINOMOTO INDONESIA</div>
+        </div>
+      </div>
+    `;
+
+    printJS({
+      printable: printContent,
+      type: 'raw-html',
+      style: `
+        @page {
+          size: 80mm 100mm;
+          margin: 0;
+        }
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `,
+      targetStyles: ['*'],
+    });
+  };
+
   const statusOptions = [
     { value: 'completed', label: 'Selesai' },
     { value: 'pending', label: 'Tertunda' },
@@ -182,7 +318,7 @@ const BarangMasuk: React.FC = () => {
           <h1 className="text-2xl font-bold text-ajinomoto-gray-900">Barang Masuk</h1>
           <p className="text-ajinomoto-gray-500">Kelola dan catat seluruh barang yang masuk ke gudang</p>
         </div>
-        
+
         <Button
           variant="primary"
           leftIcon={<PlusCircle size={16} />}
@@ -191,7 +327,7 @@ const BarangMasuk: React.FC = () => {
           Tambah Barang Masuk
         </Button>
       </div>
-      
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filter dan Pencarian</CardTitle>
@@ -207,30 +343,20 @@ const BarangMasuk: React.FC = () => {
                 fullWidth
               />
             </div>
-            
+
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                leftIcon={<Filter size={16} />}
-                onClick={() => setShowFilterModal(true)}
-              >
+              <Button variant="outline" leftIcon={<Filter size={16} />}>
                 Filter
               </Button>
-              
-              <Button
-                variant="outline"
-                leftIcon={<ArrowUpDown size={16} />}
-                onClick={() => handleSort('timestamp')}
-              >
-                {sortConfig.key === 'timestamp'
-                  ? `Sort ${sortConfig.direction === 'asc' ? '↑' : '↓'}`
-                  : 'Sort'}
+
+              <Button variant="outline" leftIcon={<ArrowUpDown size={16} />}>
+                Urutkan
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Daftar Barang Masuk</CardTitle>
@@ -344,6 +470,14 @@ const BarangMasuk: React.FC = () => {
                             >
                               Hapus
                             </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              leftIcon={<Printer size={14} />}
+                              onClick={() => handlePrintRFIDLabel(movement)}
+                            >
+                              Print RFID
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -361,7 +495,7 @@ const BarangMasuk: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <GoodsEntryForm
         isOpen={showEntryForm}
         onClose={() => setShowEntryForm(false)}
@@ -542,7 +676,8 @@ const BarangMasuk: React.FC = () => {
                 </Button>
                 <Button
                   variant="primary"
-                  leftIcon={<QrCode size={16} />}
+                  leftIcon={<Printer size={16} />}
+                  onClick={() => handlePrintRFIDLabel(movement)}
                 >
                   Print Label RFID
                 </Button>
