@@ -44,35 +44,111 @@ export const RFIDRegistrationForm: React.FC<RFIDRegistrationFormProps> = ({ onCo
   };
   
   const handlePrintTag = () => {
-    // In a real app, this would generate a printable label
-    // For now, we'll just print a simple HTML representation
     const selectedProduct = products.find(p => p.id === productId);
-    
     if (!selectedProduct) return;
-    
+
+    const currentDate = new Date().toLocaleString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     const printContent = `
-      <div style="font-family: sans-serif; padding: 20px; max-width: 300px; border: 1px solid #ccc;">
-        <div style="text-align: center; margin-bottom: 15px;">
-          <h2 style="margin: 0; color: #E61E25;">AJINOMOTO</h2>
-          <p style="margin: 5px 0; color: #1E3A8A; font-size: 14px;">WMS RFID System</p>
+      <div style="
+        width: 300px;
+        padding: 20px;
+        font-family: 'Inter', sans-serif;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+      ">
+        <!-- Header -->
+        <div style="
+          text-align: center;
+          margin-bottom: 15px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #E61E25;
+        ">
+          <div style="
+            font-size: 24px;
+            font-weight: bold;
+            color: #E61E25;
+            margin-bottom: 4px;
+          ">AJINOMOTO</div>
+          <div style="
+            font-size: 12px;
+            color: #1E3A8A;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          ">WMS RFID System</div>
         </div>
-        
+
+        <!-- RFID Tag -->
+        <div style="
+          text-align: center;
+          margin-bottom: 20px;
+          padding: 15px;
+          background: #F3F4F6;
+          border-radius: 6px;
+        ">
+          <div style="
+            font-family: monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1F2937;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+          ">${registeredTag}</div>
+          <div style="
+            font-size: 10px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          ">RFID Tag ID</div>
+        </div>
+
+        <!-- Product Info -->
         <div style="margin-bottom: 20px;">
-          <p style="margin: 4px 0; font-size: 14px;"><strong>Product:</strong> ${selectedProduct.name}</p>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>SKU:</strong> ${selectedProduct.sku}</p>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>Category:</strong> ${selectedProduct.category}</p>
-          <p style="margin: 4px 0; font-size: 14px;"><strong>Batch:</strong> ${selectedProduct.batchNumber || 'N/A'}</p>
+          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Product</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-weight: 500;">
+                ${selectedProduct.name}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">SKU</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-family: monospace;">
+                ${selectedProduct.sku}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Category</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right;">
+                ${selectedProduct.category}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #6B7280;">Batch</td>
+              <td style="padding: 4px 0; color: #1F2937; text-align: right; font-family: monospace;">
+                ${selectedProduct.batchNumber || 'N/A'}
+              </td>
+            </tr>
+          </table>
         </div>
-        
-        <div style="text-align: center;">
-          <div style="border: 1px solid #000; padding: 10px; display: inline-block; margin-bottom: 10px;">
-            <div style="font-size: 30px; font-weight: bold; letter-spacing: 1px;">${registeredTag}</div>
-          </div>
-          <p style="margin: 5px 0; font-size: 12px;">RFID Tag ID</p>
-        </div>
-        
-        <div style="margin-top: 20px; font-size: 12px; color: #6B7280; text-align: center;">
-          <p>Registered on: ${new Date().toLocaleString('id-ID')}</p>
+
+        <!-- Footer -->
+        <div style="
+          text-align: center;
+          font-size: 10px;
+          color: #6B7280;
+          padding-top: 15px;
+          border-top: 1px solid #E5E7EB;
+        ">
+          <div>Registered on: ${currentDate}</div>
+          <div style="margin-top: 4px;">PT AJINOMOTO INDONESIA</div>
         </div>
       </div>
     `;
@@ -80,7 +156,19 @@ export const RFIDRegistrationForm: React.FC<RFIDRegistrationFormProps> = ({ onCo
     printJS({
       printable: printContent,
       type: 'raw-html',
-      style: '@page { size: 58mm 40mm; margin: 0; }',
+      style: `
+        @page {
+          size: 80mm 100mm;
+          margin: 0;
+        }
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `,
+      targetStyles: ['*'],
     });
   };
   
@@ -101,8 +189,9 @@ export const RFIDRegistrationForm: React.FC<RFIDRegistrationFormProps> = ({ onCo
             size="sm"
             leftIcon={<Printer size={16} />}
             onClick={handlePrintTag}
+            className="w-full sm:w-auto"
           >
-            Print Tag RFID
+            Print Label RFID
           </Button>
         </div>
       ) : (
