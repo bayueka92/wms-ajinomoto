@@ -373,6 +373,9 @@ const BarangMasuk: React.FC = () => {
                     ID
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
+                    TAG RFID
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
                     Produk
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
