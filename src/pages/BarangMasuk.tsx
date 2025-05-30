@@ -408,6 +408,9 @@ const BarangMasuk: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-ajinomoto-gray-900">
                           {movement.id}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-ajinomoto-gray-900">
+                          1039019209093
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-ajinomoto-gray-700">
                           {product ? (
                             <div>
@@ -619,11 +622,6 @@ const BarangMasuk: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Produk</h4>
-                    <p className="text-ajinomoto-gray-900">{product.name}</p>
-                    <p className="text-sm text-ajinomoto-gray-500">{product.sku}</p>
-                  </div>
                   <div>
                     <h4 className="text-sm font-medium text-ajinomoto-gray-500">Produk</h4>
                     <p className="text-ajinomoto-gray-900">{product.name}</p>
