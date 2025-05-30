@@ -13,8 +13,8 @@ const Warehouse: React.FC = () => {
     <div className="container mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-ajinomoto-gray-900">Warehouse 3D</h1>
-          <p className="text-ajinomoto-gray-500">Visualisasi 3D dan monitoring gudang secara real-time</p>
+          <h1 className="text-2xl font-bold text-ajinomoto-gray-900">Warehouse Lokasi Rack</h1>
+          <p className="text-ajinomoto-gray-500">Lokasi rack dan monitoring gudang secara real-time</p>
         </div>
         
         <Button
@@ -30,7 +30,7 @@ const Warehouse: React.FC = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Visualisasi Gudang</CardTitle>
+              <CardTitle>Rack Gudang</CardTitle>
             </CardHeader>
             <CardContent>
               <WarehouseVisualization />
@@ -136,7 +136,7 @@ const Warehouse: React.FC = () => {
               ) : (
                 <div className="text-center py-6">
                   <p className="text-ajinomoto-gray-500">
-                    Pilih lokasi pada visualisasi 3D untuk melihat detail
+                    Pilih lokasi pada menu view untuk melihat detail
                   </p>
                 </div>
               )}

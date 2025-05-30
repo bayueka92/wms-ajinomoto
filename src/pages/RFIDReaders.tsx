@@ -60,6 +60,11 @@ const RFIDReaders: React.FC = () => {
                   <p className="text-sm font-medium text-ajinomoto-gray-500">Tipe</p>
                   <p className="text-ajinomoto-gray-900">{reader.type === 'fixed' ? 'Fixed Reader' : 'Handheld Reader'}</p>
                 </div>
+
+                <div>
+                  <p className="text-sm font-medium text-ajinomoto-gray-500">ID Reader</p>
+                  <p className="text-ajinomoto-gray-900">110A76228</p>
+                </div>
                 
                 <div>
                   <p className="text-sm font-medium text-ajinomoto-gray-500">Lokasi</p>

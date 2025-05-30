@@ -12,18 +12,18 @@ interface RFIDReaderFormProps {
 
 export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose }) => {
   const { registerReader } = useRFIDStore();
-  
+
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [type, setType] = useState<'handheld' | 'fixed'>('fixed');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
-    
+
     try {
       await registerReader({
         name,
@@ -31,7 +31,7 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
         type,
         status: 'active',
       });
-      
+
       setIsSuccess(true);
       setTimeout(() => {
         resetForm();
@@ -43,19 +43,19 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
       setIsSubmitting(false);
     }
   };
-  
+
   const resetForm = () => {
     setName('');
     setLocation('');
     setType('fixed');
     setIsSuccess(false);
   };
-  
+
   const handleClose = () => {
     resetForm();
     onClose();
   };
-  
+
   const renderSuccess = () => (
     <div className="text-center py-4">
       <div className="bg-success rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -67,7 +67,7 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
       <p className="text-ajinomoto-gray-500">Reader telah berhasil didaftarkan dan siap digunakan.</p>
     </div>
   );
-  
+
   return (
     <Modal
       isOpen={isOpen}
@@ -89,7 +89,18 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
               placeholder="e.g., Gate Reader 1, Handheld Scanner 2"
             />
           </div>
-          
+
+          <div className="mb-4">
+            <Input
+              label="ID Reader"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              fullWidth
+              required
+              placeholder="1112HDB2039"
+            />
+          </div>
+
           <div className="mb-4">
             <Input
               label="Lokasi"
@@ -100,7 +111,7 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
               placeholder="e.g., Warehouse Entrance, Shipping Zone"
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-ajinomoto-gray-700 mb-1">
               Tipe Reader
@@ -134,7 +145,7 @@ export const RFIDReaderForm: React.FC<RFIDReaderFormProps> = ({ isOpen, onClose 
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end">
             <Button
               type="submit"
