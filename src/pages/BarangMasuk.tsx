@@ -624,6 +624,11 @@ const BarangMasuk: React.FC = () => {
                     <p className="text-ajinomoto-gray-900">{product.name}</p>
                     <p className="text-sm text-ajinomoto-gray-500">{product.sku}</p>
                   </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Produk</h4>
+                    <p className="text-ajinomoto-gray-900">{product.name}</p>
+                    <p className="text-sm text-ajinomoto-gray-500">{product.sku}</p>
+                  </div>
                   
                   <div>
                     <h4 className="text-sm font-medium text-ajinomoto-gray-500">Jumlah</h4>
