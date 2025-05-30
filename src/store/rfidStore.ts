@@ -14,6 +14,8 @@ interface RFIDState {
   
   // Movement operations
   recordMovement: (movement: Omit<Movement, 'id' | 'timestamp'>) => Promise<Movement>;
+  updateMovement: (id: string, data: Partial<Movement>) => Promise<boolean>;
+  deleteMovement: (id: string) => Promise<boolean>;
   
   // Alert operations
   createAlert: (alert: Omit<Alert, 'id' | 'timestamp'>) => Promise<Alert>;
@@ -187,6 +189,24 @@ export const useRFIDStore = create<RFIDState>((set, get) => ({
     }));
     
     return newMovement;
+  },
+
+  updateMovement: async (id, data) => {
+    set((state) => ({
+      movements: state.movements.map((movement) =>
+        movement.id === id ? { ...movement, ...data } : movement
+      ),
+    }));
+    
+    return true;
+  },
+
+  deleteMovement: async (id) => {
+    set((state) => ({
+      movements: state.movements.filter((movement) => movement.id !== id),
+    }));
+    
+    return true;
   },
   
   // Alert operations

@@ -5,10 +5,11 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { CustomSelect } from '../components/ui/Select';
 import { CustomDatePicker } from '../components/ui/DatePicker';
-import { Truck, PlusCircle, Search, Filter, ArrowUpDown, Eye, Edit, Trash2 } from 'lucide-react';
+import { Truck, PlusCircle, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, QrCode } from 'lucide-react';
 import { GoodsEntryForm } from '../components/inventory/GoodsEntryForm';
 import { format } from 'date-fns';
 import { Modal } from '../components/ui/Modal';
+import Swal from 'sweetalert2';
 
 interface FilterState {
   dateRange: {
@@ -25,10 +26,19 @@ interface SortConfig {
 }
 
 const BarangMasuk: React.FC = () => {
-  const { movements, products } = useRFIDStore();
+  const { movements, products, deleteMovement, updateMovement } = useRFIDStore();
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedMovement, setSelectedMovement] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    quantity: '',
+    location: '',
+    notes: '',
+    status: '',
+  });
   const [filters, setFilters] = useState<FilterState>({
     dateRange: {
       start: null,
@@ -41,8 +51,6 @@ const BarangMasuk: React.FC = () => {
     key: 'timestamp',
     direction: 'desc',
   });
-  const [selectedMovement, setSelectedMovement] = useState<string | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Filter only incoming movements
   const incomingMovements = movements.filter(
@@ -93,24 +101,51 @@ const BarangMasuk: React.FC = () => {
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
       key,
-      direction:
-        prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
   };
 
-  const handleFilterApply = () => {
-    setShowFilterModal(false);
+  const handleDelete = async (movementId: string) => {
+    const result = await Swal.fire({
+      title: 'Apakah anda yakin?',
+      text: "Data barang masuk yang dihapus tidak dapat dikembalikan!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E61E25',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
+      await deleteMovement(movementId);
+      Swal.fire(
+        'Terhapus!',
+        'Data barang masuk berhasil dihapus.',
+        'success'
+      );
+    }
   };
 
-  const handleFilterReset = () => {
-    setFilters({
-      dateRange: {
-        start: null,
-        end: null,
-      },
-      status: '',
-      location: '',
-    });
+  const handleEdit = async () => {
+    if (!selectedMovement) return;
+
+    try {
+      await updateMovement(selectedMovement, editForm);
+      setShowEditModal(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Data barang masuk berhasil diperbarui',
+        timer: 1500
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat memperbarui data',
+      });
+    }
   };
 
   const statusOptions = [
@@ -126,6 +161,19 @@ const BarangMasuk: React.FC = () => {
     { value: 'rack-b-1', label: 'Rack B-1' },
     { value: 'rack-b-2', label: 'Rack B-2' },
   ];
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-ajinomoto-gray-100 text-ajinomoto-gray-800';
+      default:
+        return 'bg-red-100 text-red-800';
+    }
+  };
 
   return (
     <div className="container mx-auto">
@@ -251,12 +299,7 @@ const BarangMasuk: React.FC = () => {
                           {format(movement.timestamp, 'dd/MM/yyyy HH:mm')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            movement.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            movement.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            movement.status === 'cancelled' ? 'bg-ajinomoto-gray-100 text-ajinomoto-gray-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(movement.status)}`}>
                             {movement.status === 'completed' ? 'Selesai' :
                              movement.status === 'pending' ? 'Tertunda' :
                              movement.status === 'cancelled' ? 'Dibatalkan' :
@@ -280,6 +323,16 @@ const BarangMasuk: React.FC = () => {
                               variant="outline"
                               size="sm"
                               leftIcon={<Edit size={14} />}
+                              onClick={() => {
+                                setSelectedMovement(movement.id);
+                                setEditForm({
+                                  quantity: movement.quantity.toString(),
+                                  location: movement.toLocationId || '',
+                                  notes: movement.notes || '',
+                                  status: movement.status,
+                                });
+                                setShowEditModal(true);
+                              }}
                             >
                               Edit
                             </Button>
@@ -287,6 +340,7 @@ const BarangMasuk: React.FC = () => {
                               variant="danger"
                               size="sm"
                               leftIcon={<Trash2 size={14} />}
+                              onClick={() => handleDelete(movement.id)}
                             >
                               Hapus
                             </Button>
@@ -367,10 +421,22 @@ const BarangMasuk: React.FC = () => {
           />
 
           <div className="flex justify-end space-x-2 mt-6">
-            <Button variant="outline" onClick={handleFilterReset}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFilters({
+                  dateRange: { start: null, end: null },
+                  status: '',
+                  location: '',
+                });
+              }}
+            >
               Reset
             </Button>
-            <Button variant="primary" onClick={handleFilterApply}>
+            <Button
+              variant="primary"
+              onClick={() => setShowFilterModal(false)}
+            >
               Terapkan Filter
             </Button>
           </div>
@@ -382,19 +448,168 @@ const BarangMasuk: React.FC = () => {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         title="Detail Barang Masuk"
+        size="lg"
       >
-        {selectedMovement && (
-          <div className="space-y-4">
-            {/* Add detailed movement information here */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-ajinomoto-gray-500">ID Transaksi</h4>
-                <p className="text-ajinomoto-gray-900">{selectedMovement}</p>
+        {selectedMovement && (() => {
+          const movement = movements.find(m => m.id === selectedMovement);
+          const product = movement ? products.find(p => p.id === movement.productId) : null;
+
+          if (!movement || !product) return null;
+
+          return (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">ID Transaksi</h4>
+                    <p className="text-ajinomoto-gray-900 font-mono">{movement.id}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Waktu</h4>
+                    <p className="text-ajinomoto-gray-900">{format(movement.timestamp, 'dd MMMM yyyy HH:mm:ss')}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Status</h4>
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(movement.status)}`}>
+                      {movement.status === 'completed' ? 'Selesai' :
+                       movement.status === 'pending' ? 'Tertunda' :
+                       movement.status === 'cancelled' ? 'Dibatalkan' :
+                       'Gagal'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Produk</h4>
+                    <p className="text-ajinomoto-gray-900">{product.name}</p>
+                    <p className="text-sm text-ajinomoto-gray-500">{product.sku}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Jumlah</h4>
+                    <p className="text-ajinomoto-gray-900">{movement.quantity} unit</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-ajinomoto-gray-500">Lokasi</h4>
+                    <p className="text-ajinomoto-gray-900">{movement.toLocationId || '-'}</p>
+                  </div>
+                </div>
               </div>
-              {/* Add more details */}
+
+              <div className="border-t border-ajinomoto-gray-200 pt-4">
+                <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Detail Produk</h4>
+                <div className="bg-ajinomoto-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-ajinomoto-gray-500">Kategori</p>
+                      <p className="text-ajinomoto-gray-900">{product.category}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-ajinomoto-gray-500">Berat</p>
+                      <p className="text-ajinomoto-gray-900">{product.weight} kg</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-ajinomoto-gray-500">Dimensi</p>
+                      <p className="text-ajinomoto-gray-900">
+                        {product.dimensions.length}cm × {product.dimensions.width}cm × {product.dimensions.height}cm
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-ajinomoto-gray-500">Batch</p>
+                      <p className="text-ajinomoto-gray-900">{product.batchNumber || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {movement.notes && (
+                <div className="border-t border-ajinomoto-gray-200 pt-4">
+                  <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Catatan</h4>
+                  <p className="text-ajinomoto-gray-700">{movement.notes}</p>
+                </div>
+              )}
+
+              <div className="border-t border-ajinomoto-gray-200 pt-4 flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  Tutup
+                </Button>
+                <Button
+                  variant="primary"
+                  leftIcon={<QrCode size={16} />}
+                >
+                  Print Label RFID
+                </Button>
+              </div>
             </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Barang Masuk"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Jumlah"
+            type="number"
+            value={editForm.quantity}
+            onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+            fullWidth
+          />
+
+          <CustomSelect
+            label="Lokasi"
+            value={locationOptions.find((opt) => opt.value === editForm.location)}
+            onChange={(option: any) =>
+              setEditForm({ ...editForm, location: option?.value || '' })
+            }
+            options={locationOptions}
+            isClearable
+          />
+
+          <CustomSelect
+            label="Status"
+            value={statusOptions.find((opt) => opt.value === editForm.status)}
+            onChange={(option: any) =>
+              setEditForm({ ...editForm, status: option?.value || '' })
+            }
+            options={statusOptions}
+          />
+
+          <Input
+            label="Catatan"
+            value={editForm.notes}
+            onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+            fullWidth
+            multiline
+            rows={3}
+          />
+
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowEditModal(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleEdit}
+            >
+              Simpan Perubahan
+            </Button>
           </div>
-        )}
+        </div>
       </Modal>
     </div>
   );
