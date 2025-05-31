@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { useWarehouseStore } from '../../store/warehouseStore';
+import { Button } from '../ui/Button';
 import { Eye, Edit, Trash2, Plus } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
@@ -78,65 +77,68 @@ export const WarehouseVisualization: React.FC = () => {
               : 'border-ajinomoto-gray-200 hover:border-ajinomoto-red'
           }`}
         >
-          <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+          <div className="space-y-4">
             <div>
-              <h3 className="font-medium text-ajinomoto-gray-900">{location.name}</h3>
+              <h3 className="text-lg font-medium text-ajinomoto-gray-900">{location.name}</h3>
               <p className="text-sm text-ajinomoto-gray-500">{location.code}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Eye size={14} />}
-                onClick={() => setShowDetailModal(true)}
-                className="hover:bg-ajinomoto-red hover:text-white w-full sm:w-auto"
-              >
-                View
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Edit size={14} />}
-                onClick={() => handleEdit(location)}
-                className="hover:bg-ajinomoto-blue hover:text-white w-full sm:w-auto"
-              >
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Trash2 size={14} />}
-                onClick={() => handleDelete(location.id)}
-                className="hover:bg-error hover:text-white w-full sm:w-auto"
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-ajinomoto-gray-500">Kapasitas:</span>
-              <span>{location.capacity}</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-ajinomoto-gray-500">Kapasitas:</span>
+                <span>{location.capacity}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-ajinomoto-gray-500">Terisi:</span>
+                <span>{location.occupied}</span>
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-ajinomoto-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      (location.occupied / location.capacity) < 0.7
+                        ? 'bg-success'
+                        : (location.occupied / location.capacity) < 0.9
+                        ? 'bg-warning'
+                        : 'bg-error'
+                    }`}
+                    style={{
+                      width: `${(location.occupied / location.capacity) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-ajinomoto-gray-500">Terisi:</span>
-              <span>{location.occupied}</span>
-            </div>
-            <div className="mt-2">
-              <div className="w-full bg-ajinomoto-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    (location.occupied / location.capacity) < 0.7
-                      ? 'bg-success'
-                      : (location.occupied / location.capacity) < 0.9
-                      ? 'bg-warning'
-                      : 'bg-error'
-                  }`}
-                  style={{
-                    width: `${(location.occupied / location.capacity) * 100}%`,
-                  }}
-                />
+
+            <div className="pt-4 mt-4 border-t border-ajinomoto-gray-200">
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Eye size={14} />}
+                  onClick={() => setShowDetailModal(true)}
+                  className="w-full justify-center hover:bg-ajinomoto-red hover:text-white"
+                >
+                  Lihat Detail
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Edit size={14} />}
+                  onClick={() => handleEdit(location)}
+                  className="w-full justify-center hover:bg-ajinomoto-blue hover:text-white"
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Trash2 size={14} />}
+                  onClick={() => handleDelete(location.id)}
+                  className="w-full justify-center hover:bg-error hover:text-white"
+                >
+                  Hapus
+                </Button>
               </div>
             </div>
           </div>
