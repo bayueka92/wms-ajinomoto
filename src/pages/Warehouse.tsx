@@ -11,7 +11,7 @@ const Warehouse: React.FC = () => {
 
   return (
     <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-ajinomoto-gray-900">Warehouse Lokasi Rack</h1>
           <p className="text-ajinomoto-gray-500">Lokasi rack dan monitoring gudang secara real-time</p>
@@ -45,13 +45,13 @@ const Warehouse: React.FC = () => {
             </CardHeader>
             <CardContent>
               {selectedLocation ? (
-                <div>
+                <div className="space-y-4">
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold text-ajinomoto-gray-900">{selectedLocation.name}</h3>
                     <p className="text-sm text-ajinomoto-gray-500">{selectedLocation.code}</p>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
                       <p className="text-sm font-medium text-ajinomoto-gray-500">Tipe</p>
                       <p className="text-ajinomoto-gray-900">
@@ -107,11 +107,12 @@ const Warehouse: React.FC = () => {
                     </div>
 
                     <div className="pt-4 border-t border-ajinomoto-gray-200 mt-4">
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           leftIcon={<Eye size={14} />}
+                          className="w-full sm:w-auto"
                         >
                           Lihat Detail
                         </Button>
@@ -119,6 +120,7 @@ const Warehouse: React.FC = () => {
                           variant="outline"
                           size="sm"
                           leftIcon={<Edit size={14} />}
+                          className="w-full sm:w-auto"
                         >
                           Edit
                         </Button>
@@ -126,6 +128,7 @@ const Warehouse: React.FC = () => {
                           variant="danger"
                           size="sm"
                           leftIcon={<Trash2 size={14} />}
+                          className="w-full sm:w-auto"
                         >
                           Hapus
                         </Button>

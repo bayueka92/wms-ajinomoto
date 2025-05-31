@@ -68,7 +68,7 @@ export const WarehouseVisualization: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {locations.map((location) => (
         <div
           key={location.id}
@@ -78,18 +78,18 @@ export const WarehouseVisualization: React.FC = () => {
               : 'border-ajinomoto-gray-200 hover:border-ajinomoto-red'
           }`}
         >
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
             <div>
               <h3 className="font-medium text-ajinomoto-gray-900">{location.name}</h3>
               <p className="text-sm text-ajinomoto-gray-500">{location.code}</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 leftIcon={<Eye size={14} />}
                 onClick={() => setShowDetailModal(true)}
-                className="hover:bg-ajinomoto-red hover:text-white"
+                className="hover:bg-ajinomoto-red hover:text-white w-full sm:w-auto"
               >
                 View
               </Button>
@@ -98,7 +98,7 @@ export const WarehouseVisualization: React.FC = () => {
                 size="sm"
                 leftIcon={<Edit size={14} />}
                 onClick={() => handleEdit(location)}
-                className="hover:bg-ajinomoto-blue hover:text-white"
+                className="hover:bg-ajinomoto-blue hover:text-white w-full sm:w-auto"
               >
                 Edit
               </Button>
@@ -107,7 +107,7 @@ export const WarehouseVisualization: React.FC = () => {
                 size="sm"
                 leftIcon={<Trash2 size={14} />}
                 onClick={() => handleDelete(location.id)}
-                className="hover:bg-error hover:text-white"
+                className="hover:bg-error hover:text-white w-full sm:w-auto"
               >
                 Delete
               </Button>
@@ -152,7 +152,7 @@ export const WarehouseVisualization: React.FC = () => {
       >
         {selectedLocation && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <h4 className="text-sm font-medium text-ajinomoto-gray-500">Nama Lokasi</h4>
                 <p className="text-ajinomoto-gray-900">{selectedLocation.name}</p>
@@ -186,7 +186,7 @@ export const WarehouseVisualization: React.FC = () => {
 
             <div>
               <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Dimensi</h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-ajinomoto-gray-500">Panjang</p>
                   <p className="text-ajinomoto-gray-900">{selectedLocation.width}m</p>
@@ -204,7 +204,7 @@ export const WarehouseVisualization: React.FC = () => {
 
             <div>
               <h4 className="text-sm font-medium text-ajinomoto-gray-500 mb-2">Koordinat</h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-ajinomoto-gray-500">X</p>
                   <p className="text-ajinomoto-gray-900">{selectedLocation.x}</p>
@@ -218,6 +218,26 @@ export const WarehouseVisualization: React.FC = () => {
                   <p className="text-ajinomoto-gray-900">{selectedLocation.z}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 justify-end pt-4 border-t border-ajinomoto-gray-200">
+              <Button
+                variant="outline"
+                onClick={() => setShowDetailModal(false)}
+                className="w-full sm:w-auto"
+              >
+                Tutup
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setShowDetailModal(false);
+                  handleEdit(selectedLocation);
+                }}
+                className="w-full sm:w-auto"
+              >
+                Edit Lokasi
+              </Button>
             </div>
           </div>
         )}
@@ -250,7 +270,7 @@ export const WarehouseVisualization: React.FC = () => {
             onChange={(e) => setEditForm({ ...editForm, capacity: parseInt(e.target.value) })}
             fullWidth
           />
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
               label="Panjang (m)"
               type="number"
@@ -273,16 +293,18 @@ export const WarehouseVisualization: React.FC = () => {
               fullWidth
             />
           </div>
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex flex-wrap gap-2 justify-end mt-6">
             <Button
               variant="outline"
               onClick={() => setShowEditModal(false)}
+              className="w-full sm:w-auto"
             >
               Batal
             </Button>
             <Button
               variant="primary"
               onClick={handleEditSubmit}
+              className="w-full sm:w-auto"
             >
               Simpan Perubahan
             </Button>
