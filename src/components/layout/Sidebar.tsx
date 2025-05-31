@@ -136,13 +136,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               isActive={location.pathname === '/lokasi'}
             />
 
-            <SidebarItem
-              to="/readers"
-              icon={<Wifi size={20} />}
-              label="RFID Readers"
-              isActive={location.pathname === '/readers'}
-            />
-
             <div className="pt-2 mt-2 border-t border-ajinomoto-gray-200">
               <h3 className={`text-xs uppercase tracking-wider text-ajinomoto-gray-500 font-semibold px-3 mb-1 ${!isOpen && 'sr-only'}`}>
                 Laporan
@@ -174,6 +167,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               icon={<Settings size={20} />}
               label="Pengaturan"
               isActive={location.pathname === '/pengaturan'}
+            />
+
+            <SidebarItem
+              to="/readers"
+              icon={<Wifi size={20} />}
+              label="RFID Readers"
+              isActive={location.pathname === '/readers'}
             />
           </nav>
         </div>
