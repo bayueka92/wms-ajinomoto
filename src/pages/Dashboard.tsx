@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Visualisasi Gudang 3D</CardTitle>
+                <CardTitle>Lokasi Rack</CardTitle>
                 <div className="text-sm text-ajinomoto-gray-500">
                   Kapasitas: {capacityUtilization.toFixed(1)}% terisi
                 </div>
