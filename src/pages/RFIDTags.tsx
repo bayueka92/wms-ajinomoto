@@ -3,13 +3,24 @@ import { useRFIDStore } from '../store/rfidStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { QrCode, PlusCircle, Search, Filter, ArrowUpDown, Edit, Trash2, Printer } from 'lucide-react';
+import {
+  PlusCircle,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Edit,
+  Trash2,
+  Printer
+} from 'lucide-react';
 import { RFIDRegistrationForm } from '../components/rfid/RFIDRegistrationForm';
+import { format } from 'date-fns';
 
 const RFIDTags: React.FC = () => {
   const { rfidTags, products } = useRFIDStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const filteredTags = searchTerm
     ? rfidTags.filter((tag) => {
@@ -21,6 +32,12 @@ const RFIDTags: React.FC = () => {
         );
       })
     : rfidTags;
+
+  const totalPages = Math.ceil(filteredTags.length / itemsPerPage);
+  const currentTags = filteredTags.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="container mx-auto">
@@ -49,7 +66,10 @@ const RFIDTags: React.FC = () => {
               <Input
                 placeholder="Cari berdasarkan Tag ID, nama produk, atau SKU"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1); // reset ke halaman 1 jika mencari
+                }}
                 leftIcon={<Search size={16} />}
                 fullWidth
               />
@@ -59,7 +79,6 @@ const RFIDTags: React.FC = () => {
               <Button variant="outline" leftIcon={<Filter size={16} />}>
                 Filter
               </Button>
-
               <Button variant="outline" leftIcon={<ArrowUpDown size={16} />}>
                 Urutkan
               </Button>
@@ -77,92 +96,62 @@ const RFIDTags: React.FC = () => {
             <table className="min-w-full divide-y divide-ajinomoto-gray-200">
               <thead className="bg-ajinomoto-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Tag ID
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Produk
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Lokasi
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Terakhir Dipindai
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">
-                    Aksi
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-ajinomoto-gray-500 uppercase tracking-wider">NO</th>
+                  <th className="px-6 py-3">Tag ID</th>
+                  <th className="px-6 py-3">Produk</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Lokasi</th>
+                  <th className="px-6 py-3">Terakhir Dipindai</th>
+                  <th className="px-6 py-3">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-ajinomoto-gray-200">
-                {filteredTags.map((tag) => {
+                {currentTags.map((tag, index) => {
                   const product = products.find((p) => p.id === tag.productId);
-
                   return (
                     <tr key={tag.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ajinomoto-gray-900">
-                        {tag.tagId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ajinomoto-gray-700">
+                      <td className="px-6 py-4">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="px-6 py-4 font-mono">{tag.tagId}</td>
+                      <td className="px-6 py-4">
                         {product ? (
-                          <div>
+                          <>
                             <div>{product.name}</div>
                             <div className="text-xs text-ajinomoto-gray-500">{product.sku}</div>
-                          </div>
+                          </>
                         ) : (
                           'Unknown Product'
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      <td className="px-6 py-4">
+                        <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${
                           tag.status === 'active' ? 'bg-green-100 text-green-800' :
                           tag.status === 'inactive' ? 'bg-ajinomoto-gray-100 text-ajinomoto-gray-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
                           {tag.status === 'active' ? 'Aktif' :
-                           tag.status === 'inactive' ? 'Tidak Aktif' :
-                           'Pending'}
+                          tag.status === 'inactive' ? 'Tidak Aktif' : 'Pending'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ajinomoto-gray-700">
-                        {tag.locationId || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ajinomoto-gray-700">
+                      <td className="px-6 py-4">{tag.locationId || '-'}</td>
+                      <td className="px-6 py-4">
                         {tag.lastScan ? (
-                          <div>
+                          <>
                             <div>{tag.lastScan.location}</div>
                             <div className="text-xs text-ajinomoto-gray-500">
-                              {tag.lastScan.timestamp.toLocaleString('id-ID')}
+                              {format(new Date(tag.lastScan.timestamp), 'dd/MM/yyyy HH:mm')}
                             </div>
-                          </div>
-                        ) : (
-                          '-'
-                        )}
+                          </>
+                        ) : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ajinomoto-gray-700">
+                      <td className="px-6 py-4">
                         <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            leftIcon={<Printer size={14} />}
-                          >
+                          <Button variant="outline" size="sm" leftIcon={<Printer size={14} />}>
                             Print
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            leftIcon={<Edit size={14} />}
-                          >
+                          <Button variant="outline" size="sm" leftIcon={<Edit size={14} />}>
                             Edit
                           </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            leftIcon={<Trash2 size={14} />}
-                          >
+                          <Button variant="danger" size="sm" leftIcon={<Trash2 size={14} />}>
                             Hapus
                           </Button>
                         </div>
@@ -172,6 +161,31 @@ const RFIDTags: React.FC = () => {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-ajinomoto-gray-600">
+              Halaman {currentPage} dari {totalPages}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
