@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real app, this would validate credentials against a backend
-      if (username === 'admin' && password === 'password') {
+      if (username === 'admin' && password === 'admin') {
         set({ user: mockUser, isAuthenticated: true, isLoading: false });
         return true;
       }
