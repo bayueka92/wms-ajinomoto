@@ -21,14 +21,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        
+
         <div className="relative">
           {leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {leftIcon}
             </div>
           )}
-          
+
           <input
             ref={ref}
             className={twMerge(
@@ -42,14 +42,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
             {...props}
           />
-          
+
           {rightIcon && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
               {rightIcon}
             </div>
           )}
         </div>
-        
+
         {error && (
           <p className="mt-1 text-sm text-error">{error}</p>
         )}
