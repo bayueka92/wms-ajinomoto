@@ -110,7 +110,7 @@ const Login: React.FC = () => {
           
           <div className="text-center text-xs text-ajinomoto-gray-500 mt-4">
             <p>© {new Date().getFullYear()} PT Ajinomoto Indonesia</p>
-            <p>v1.0.0</p>
+            <p>v1.1.0</p>
           </div>
         </form>
       </div>
