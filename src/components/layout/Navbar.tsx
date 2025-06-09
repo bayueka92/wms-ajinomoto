@@ -60,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick, sidebarOpen }) => {
                 alt="Ajinomoto Logo"
                 className="h-8"
               />
-              <span className="ml-3 text-xl font-semibold text-ajinomoto-red hidden md:block">WMS RFID</span>
+              <span className="ml-3 text-xl font-semibold text-ajinomoto-red hidden md:block">WAREHOUSE MANAGEMENT SYSTEM RFID AJINOMOTO</span>
             </div>
           </div>
           
